@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ForgotPasswordEmail;
 use App\Mail\TestMail;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -77,5 +78,58 @@ class AuthController extends Controller
             'body' => 'This is a test message',
         ];
         Mail::to('fennich0011soufiane@gmail.com')->send(new TestMail('test subject', $data));
+    }
+
+    public function forgetPasswordRequest(Request $request)
+    {
+        $request->validate([
+            'email' => 'email|required'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if(!$user) {
+            return response()->json([
+                'errors' => ['email' => ["Account with this email not found"]]
+            ], 422);
+        }
+        $code = rand(11111, 99999);
+        $user->remember_token = $code;
+        $user->save();
+
+        $data = [
+            'name' => $user->first_name.' '.$user->last_name,
+            'code' => $code,
+        ];
+        Mail::to($user->email)->send(new ForgotPasswordEmail('test subject', $data));
+
+        return response()->json([
+           'message' => 'We have sended code to your email.'
+        ]);
+    }
+
+    public function verifyAndChangePassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'code' => 'required',
+            'password' => 'required|confirmed'
+        ]);
+        $user = User::where('email', $request->email)
+                    ->where('remember_token', $request->code)
+                    ->first();
+        if(!$user) {
+            return response()->json([
+                'errors' => ['code' => ['Invalid otp']]
+            ], 422);
+        }
+
+        $user->remember_token = null;
+        $user->password = bcrypt($request->password);
+        $user->save();
+
+        return response()->json([
+            'message' => 'Your password has been changed successfully.'
+        ]);
     }
 }

@@ -13,6 +13,8 @@ Route::group(['prefix' => 'auth'], function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/send-mail', [AuthController::class, 'testMail']);
+    Route::post('/forget-password-request', [AuthController::class, 'forgetPasswordRequest']);
+    Route::post('/forget-password', [AuthController::class, 'verifyAndChangePassword']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
