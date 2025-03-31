@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\TestMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -52,6 +54,7 @@ class AuthController extends Controller
             'access_token' => $token,
         ]);
     }
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
@@ -65,5 +68,14 @@ class AuthController extends Controller
     {
         $user = Auth::user();
         return response()->json($user);
+    }
+
+    public function testMail(Request $request)
+    {
+        $data = [
+            'name' => 'Joe Doe',
+            'body' => 'This is a test message',
+        ];
+        Mail::to('fennich0011soufiane@gmail.com')->send(new TestMail('test subject', $data));
     }
 }
