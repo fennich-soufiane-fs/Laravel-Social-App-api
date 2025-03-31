@@ -60,4 +60,10 @@ class AuthController extends Controller
             'message' => 'Logged out successfully'
         ], 200);
     }
+
+    public function getProfile ()
+    {
+        $user = Auth::user();
+        return response()->json($user);
+    }
 }
