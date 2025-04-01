@@ -8,6 +8,7 @@ use App\Mail\TestMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
@@ -130,6 +131,47 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Your password has been changed successfully.'
+        ]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|current_password',
+            'password' => 'required|min:8|confirmed'
+        ]);
+        $user = $request->user();
+
+        $user->password = Hash::make($request->password);
+        $user->save();
+        return response()->json([
+            'message' => 'Password updates successfully.'
+        ], 200);
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'first_name' => 'required',
+            'last_name' => 'required',
+        ]);
+        $user = $request->user();
+
+        if($user->email != $request->email)
+        {
+            $request->validate([
+                'email' => 'required|unique:users,email'
+            ]);
+            $user->email = $request->email;
+        }
+        $user->first_name = $request->first_name ?? $user->first_name;
+        $user->last_name = $request->last_name ?? $user->last_name;
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Profile updated successfully.',
+            'data' => $user
         ]);
     }
 }
