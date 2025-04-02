@@ -14,7 +14,9 @@ class PostController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $posts = Post::where('user_id', $user->id)
+        $posts = Post::with(['user:id', 'comments.user:id,first_name,last_name', 'likes.user:id,first_name,last_name'])
+                            ->withCount('likes','comments')
+                            ->where('user_id', $user->id)
                             ->orderBy('created_at', 'desc')
                             ->cursorpaginate();
         return response()->json($posts);

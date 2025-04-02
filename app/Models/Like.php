@@ -10,4 +10,9 @@ class Like extends Model
         'post_id',
         'user_id'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }
